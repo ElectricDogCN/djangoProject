@@ -3,6 +3,10 @@ import json
 import socket
 import threading
 
+from django.shortcuts import render
+
+from djangoProject import socket as ss
+
 
 class ServerSocket:
     MSGLEN = 512
@@ -48,7 +52,7 @@ s_server: ServerSocket = None
 
 
 def run_receiver():
-    print("test")
+    print("start control socket server")
     global s_server
     s_server = ServerSocket()
     s_server.accept()
@@ -60,18 +64,20 @@ def run_receiver():
             return
 
 
+def index(request):
+    return render(request, "control.html")
+
+
 def as_views(request):
     left = request.GET.get("l", "0")
     right = request.GET.get("r", "0")
     cmd = '{{driveCmd: {{l:{l}, r:{r} }} }}\n'.format(l=left, r=right)
-    global s_server
-    if s_server is None:
-        t = threading.Thread(target=run_receiver)
-        t.start()
-    else:
-        try:
-            s_server.send(cmd)
-        except:
-            HttpResponse("wait connect")
-
-    return HttpResponse(cmd)
+    try:
+        if ss.s_server.last_data is None:
+            ss.s_server.last_data = ""
+            ss.s_server.receive_thread()
+        ss.s_server.send(cmd)
+    except:
+        ss.s_server.last_data = None
+        return HttpResponse("wait connect")
+    return HttpResponse(ss.s_server.last_data)

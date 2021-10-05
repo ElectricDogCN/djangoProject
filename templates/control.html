@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<!-- saved from url=(0102)http://ossrs.net/players/rtc_player.html?vhost=d.ossrs.net&server=d.ossrs.net&port=1985&autostart=true -->
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    {% load static %}
+    <title>SRS</title>
+
+    <style>
+        body {
+            padding-top: 30px;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+    <script type="text/javascript" src="{% static 'js/jquery-1.10.2.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/adapter-7.4.0.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/srs.sdk.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/winlin.utility.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/srs.page.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/nipplejs.js' %}"></script>
+</head>
+<body style="">
+<div class="container">
+    <div class="form-inline">
+        <table>
+            <tr align="center">
+                <td>Video Server URI:</td>
+                <td><input type="text" id="txt_url" class="input-xxlarge" value=""></td>
+                <td rowspan="2">
+                    <button class="btn btn-primary" id="btn_play">Apply</button>
+                </td>
+            </tr>
+            <tr>
+                <td>Control Server Api URI:</td>
+                <td><input type="text" id="txt_con_url" class="input-xxlarge" value=""></td>
+            </tr>
+        </table>
+
+        <label></label>
+        <input type="range" min="-100" max="100" value="0"/>
+        <label></label>
+        <input type="range" min="-100" max="100" value="0"/>
+    </div>
+
+    <label></label>
+    <video id="rtc_media_player" controls="" autoplay="" style="display: inline-block;"></video>
+
+
+    <label></label>
+    <div style="width: 150px;height: 150px ;user-select: none;position: static">
+        <div id="joy-con"></div>
+    </div>
+
+
+    <script type="text/javascript">
+        let joyCon = document.querySelector("#joy-con");
+        // eslint-disable-next-line no-debugger
+        let options = {
+            color: 'red',
+            mode: "static",// 'dynamic', 'static' or 'semi'
+            size: 140,
+            position: {
+                left: "100px",
+                top: "350px"
+            },//在容器内垂直居中显示
+            zone: joyCon //如果不提提供zone容器元素，那么默认动态生成的元素是注入在body中的。
+        };
+        let manager = nipplejs.create(options);
+        //滑动摇杆的事件
+        manager.on("move", function (evt, data) {
+            if (data.direction) {
+                console.log(data["vector"])
+                let l = data["vector"]["y"] + data["vector"]["x"] / 4
+                let r = data["vector"]["y"] - data["vector"]["x"] / 4
+                $.get($('#txt_con_url').val() + "/control/?l=" + l + "&r=" + r, function (data, status) {
+                    console.log("Data: " + data + "\nStatus: " + status);
+                });
+            }
+        });
+
+        //停止滑动摇杆的事件
+        manager.on("end", function (evt, data) {
+            $.get($('#txt_con_url').val() + "/control/?l=0&r=0", function (data, status) {
+                console.log("Data: " + data + "\nStatus: " + status);
+            });
+            console.log(data)
+        });
+    </script>
+
+    <label></label>
+    SessionID: <span id="sessionid"></span>
+
+    <label></label>
+    Simulator: <a href="" id="simulator-drop">Drop</a>
+
+</div>
+<script type="text/javascript">
+    $(function () {
+        var sdk = null; // Global handler to do cleanup when replaying.
+        var startPlay = function () {
+            $('#rtc_media_player').show();
+            $('#joy-con').show();
+
+            // Close PC when user replay.
+            if (sdk) {
+                sdk.close();
+            }
+            sdk = new SrsRtcPlayerAsync();
+
+            // https://webrtc.org/getting-started/remote-streams
+            $('#rtc_media_player').prop('srcObject', sdk.stream);
+            // Optional callback, SDK will add track to stream.
+            // sdk.ontrack = function (event) { console.log('Got track', event); sdk.stream.addTrack(event.track); };
+
+            // For example: webrtc://r.ossrs.net/live/livestream
+            var url = $("#txt_url").val();
+            sdk.play(url).then(function (session) {
+                $('#sessionid').html(session.sessionid);
+                $('#simulator-drop').attr('href', session.simulator + '?drop=1&username=' + session.sessionid);
+            }).catch(function (reason) {
+                sdk.close();
+                $('#rtc_media_player').hide();
+                $('#joy-con').hide();
+                console.error(reason);
+            });
+        };
+
+        $('#rtc_media_player').hide();
+        $('#joy-con').hide();
+        $('#txt_url').val('webrtc://' + window.location.host.split(":")[0] + '/live/ob01')
+        $('#txt_con_url').val(window.location.href.split(window.location.host)[0] + window.location.host)
+        var query = parse_query_string();
+        // srs_init_rtc("#txt_url", query);
+
+        $("#btn_play").click(function () {
+            $('#rtc_media_player').prop('muted', false);
+            startPlay();
+        });
+
+        if (query.autostart === 'true') {
+            $('#rtc_media_player').prop('muted', true);
+            console.warn('For autostart, we should mute it, see https://www.jianshu.com/p/c3c6944eed5a ' +
+                'or https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#audiovideo_elements');
+
+            startPlay();
+        }
+    });
+</script>
+
+
+</body>
+</html>
