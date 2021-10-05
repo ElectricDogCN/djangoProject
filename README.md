@@ -34,17 +34,17 @@ python manage.py runserver 0.0.0.0:8001
 ````
 cd djangoProject/
 #启动程序并输入到指定日志：
-nohup python manage.py runserver 0.0.0.0:8001 > ./openbot-web.log 2&>1 &
+nohup python manage.py runserver 0.0.0.0:8001 &
 
 #查看log
 cd djangoProject/
-tail -f -n 30 ./openbot-web.log
+tail -f -n 30 ./nohup.out
 
 #查看后台某个进程的pid：
 ps -ef|grep "Application Name"
 
 #杀死进程：
-kill -9 {pid}
+kill {pid}
 ````
 
 使用
