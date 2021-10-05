@@ -1,4 +1,4 @@
-# djangoProject (会改名的....)
+# openbot-web
 用途
 --------------------
 通过django+自建socket服务，控制openbot项目中小车的移动，并可以通过webtrc协议，观看车的实时画面。
