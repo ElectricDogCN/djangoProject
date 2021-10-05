@@ -23,5 +23,4 @@ urlpatterns = [
     path('control/', index.as_views),
     path('', index.index),
 
-
 ]
