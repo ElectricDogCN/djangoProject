@@ -1,7 +1,7 @@
 # openbot-web
 用途
 --------------------
-通过django+自建socket服务，控制openbot项目中小车的移动，并可以通过webtrc协议，观看车的实时画面。
+通过django+自建socket服务，控制openbot项目中车的移动，并可以通过webtrc协议，观看车的实时画面。
 
 部署环境
 --------------------
@@ -22,7 +22,16 @@ git version 2.25.1
 conda create -n openbot_web_control python=3.9
 conda activate openbot_web_control
 ````
-
+Miniconda 安装(清华源)：
+````
+# https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/?C=M&O=A
+wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh
+chmod 777 Miniconda3-latest-Linux-x86_64.sh
+# 根据安装指引完成安装，可以初始化conda[yes]
+./Miniconda3-latest-Linux-x86_64.sh
+# 重新打开Terminal
+conda info
+````
 启动Django
 ------------------
 如果已经在openbot-web文件夹内，中则不需要执行第一行cd openbot-web/
