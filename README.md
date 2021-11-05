@@ -7,7 +7,7 @@
 --------------------
 Linux：
 ````
-git clone https://github.com/ElectricDogCN/djangoProject.git && cd djangoProject && pip install -r requirements.txt
+git clone https://github.com/ElectricDogCN/openbot-web.git && cd openbot-web && pip install -r requirements.txt
 ````
 
 配置前请确认系统内有python(3.6+)与git
@@ -25,19 +25,19 @@ conda activate openbot_web_control
 
 启动Django
 ------------------
-如果已经在djangoProject文件夹内，中则不需要执行第一行cd djangoProject/
+如果已经在openbot-web文件夹内，中则不需要执行第一行cd openbot-web/
 ````
-cd djangoProject/
+cd openbot-web/
 python manage.py runserver 0.0.0.0:8001
 ````
 后台启动
 ````
-cd djangoProject/
+cd openbot-web/
 #启动程序并输入到指定日志：
 nohup python manage.py runserver 0.0.0.0:8001 &
 
 #查看log
-cd djangoProject/
+cd openbot-web/
 tail -f -n 30 ./nohup.out
 
 #查看后台某个进程的pid：
