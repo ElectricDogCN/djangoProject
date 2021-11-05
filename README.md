@@ -10,7 +10,7 @@ Linux：
 git clone https://github.com/ElectricDogCN/openbot-web.git && cd openbot-web && pip install -r requirements.txt
 ````
 
-配置前请确认系统内有python(3.6+)与git
+配置前请确认系统内有Python(3.6+)与git
 ````
 $ python --version
 Python 3.8.8
@@ -31,6 +31,17 @@ chmod 777 Miniconda3-latest-Linux-x86_64.sh
 ./Miniconda3-latest-Linux-x86_64.sh
 # 重新打开Terminal
 conda info
+````
+Docker 安装（清华源）：
+````
+[清华镜像站安装指南](https://mirrors4.tuna.tsinghua.edu.cn/help/docker-ce/)
+````
+部署Srs rtmp-rtc：
+````
+#替换你的服务器公网ip
+CANDIDATE=1.2.3.4
+#启动srs
+docker run --rm --env CANDIDATE=$CANDIDATE -d -p 1935:1935 -p 8080:8080 -p 1985:1985 -p 8000:8000/udp ossrs/srs:4 objs/srs -c /rtmp2rtc.conf
 ````
 启动Django
 ------------------
