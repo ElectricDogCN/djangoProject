@@ -2,6 +2,7 @@ import socket
 import threading
 
 
+# I know that the thread pool needs to be used here, but it only needs No problem if it runs successfully.....
 class SocketServer:
     MSGLEN = 512
 
@@ -21,6 +22,7 @@ class SocketServer:
             (conn, addr) = self.sock.accept()
             print(f"socket connect ip:{addr}")
             self.server_socket = conn
+            self.receive_thread()
 
     def accept_thread(self):
         print("start control socket server")
@@ -30,7 +32,12 @@ class SocketServer:
     def receive_thread_fun(self):
         while True:
             self.last_data = self.receive()
+            if self.last_data == "":
+                print(f'Received is null, close this client')
+                self.server_socket.close()
+                break
             print(f'Received: {self.last_data}\r')
+
 
     def receive_thread(self):
         t = threading.Thread(target=self.receive_thread_fun())

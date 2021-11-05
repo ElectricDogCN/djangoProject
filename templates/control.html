@@ -37,9 +37,9 @@
         </table>
 
         <label></label>
-        <input type="range" min="-100" max="100" value="0"/>
+        <input type="range" min="-1" max="1" value="0"/>
         <label></label>
-        <input type="range" min="-100" max="100" value="0"/>
+        <input type="range" min="-1" max="1" value="0"/>
     </div>
 
     <label></label>
@@ -69,9 +69,17 @@
         //滑动摇杆的事件
         manager.on("move", function (evt, data) {
             if (data.direction) {
-                console.log(data["vector"])
-                let l = data["vector"]["y"] + data["vector"]["x"] / 4
-                let r = data["vector"]["y"] - data["vector"]["x"] / 4
+                let x = data["vector"]["x"]
+                let y = data["vector"]["y"]
+                let cc = Math.sqrt(x * x + y * y)
+                cc = cc > 1 ? 1 : cc
+                let l = x > 0 ? cc : 1 + x
+                let r = x > 0 ? 1 - x : cc
+                if (y < 0) {
+                    l = -l;
+                    r = -r;
+                }
+
                 $.get($('#txt_con_url').val() + "/control/?l=" + l + "&r=" + r, function (data, status) {
                     console.log("Data: " + data + "\nStatus: " + status);
                 });
@@ -136,7 +144,6 @@
             $('#rtc_media_player').prop('muted', false);
             startPlay();
         });
-
         if (query.autostart === 'true') {
             $('#rtc_media_player').prop('muted', true);
             console.warn('For autostart, we should mute it, see https://www.jianshu.com/p/c3c6944eed5a ' +
