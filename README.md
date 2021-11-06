@@ -86,6 +86,21 @@ conda activate openbot_web_control
 git clone https://github.com/ElectricDogCN/openbot-web.git
 ````
 
+### 配置Python依赖：
+#### 激活Conda虚拟环境(已激活请忽略)：
+
+````
+conda activate openbot_web_control
+````
+
+#### 进入OpenBot-web工作目录(已进入请忽略)：
+````
+cd openbot-web
+````
+#### 安装依赖：
+````
+pip install -r requirements.txt
+````
 ### Docker安装（清华源,已安装请忽略）：
 
 ````
