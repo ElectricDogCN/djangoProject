@@ -27,7 +27,7 @@ Miniconda 安装(清华源)：
 # https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/?C=M&O=A
 wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh
 chmod 777 Miniconda3-latest-Linux-x86_64.sh
-# 根据安装指引完成安装，可以初始化conda[yes]
+# 根据安装指引完成安装，可以初始化conda [yes]
 ./Miniconda3-latest-Linux-x86_64.sh
 # 重新打开Terminal
 conda info
@@ -45,7 +45,7 @@ docker run --rm --env CANDIDATE=$CANDIDATE -d -p 1935:1935 -p 8080:8080 -p 1985:
 ````
 启动Django
 ------------------
-如果已经在openbot-web文件夹内，中则不需要执行第一行cd openbot-web/
+如果已经在openbot-web文件夹内，中则不需要执行第一行`cd openbot-web/`
 ````
 cd openbot-web/
 python manage.py runserver 0.0.0.0:8001

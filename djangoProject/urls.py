@@ -16,9 +16,11 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path
+from django.contrib.staticfiles.views import serve
 from djangoProject import views as index
 
 urlpatterns = [
+    path('favicon.ico', serve, {'path': 'img/favicon.ico'}),
     path('admin/', admin.site.urls),
     path('control/', index.as_views),
     path('', index.index),
