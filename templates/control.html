@@ -53,6 +53,20 @@
 
 
     <script type="text/javascript">
+        submitControl = function (l, r) {
+            if (this.promise_ != null) {
+                if ((new Date().getTime() - this.lastDate)<50){
+                    return
+                }
+                if (this.promise_.state() === 'pending')
+                    this.promise_.abort()
+            }
+            this.lastDate = new Date().getTime()
+            return this.promise_ = $.get($('#txt_con_url').val() + "/control/?l=" + l + "&r=" + r, function (data, status) {
+                console.log("Data: " + data + "\nStatus: " + status);
+            });
+        }
+
         let joyCon = document.querySelector("#joy-con");
         // eslint-disable-next-line no-debugger
         let options = {
@@ -79,10 +93,7 @@
                     l = -l;
                     r = -r;
                 }
-
-                $.get($('#txt_con_url').val() + "/control/?l=" + l + "&r=" + r, function (data, status) {
-                    console.log("Data: " + data + "\nStatus: " + status);
-                });
+                submitControl(l, r)
             }
         });
 
