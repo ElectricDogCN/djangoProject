@@ -51,11 +51,48 @@
         <div id="joy-con"></div>
     </div>
 
+    <label></label>
+    SessionID: <span id="sessionid"></span>
 
-    <script type="text/javascript">
-        submitControl = function (l, r) {
+    <label></label>
+    Simulator: <a href="" id="simulator-drop">Drop</a>
+
+</div>
+<script type="text/javascript">
+    $(function () {
+        $('#rtc_media_player').hide();
+        $('#joy-con').hide();
+        $('#txt_url').val('webrtc://' + window.location.host.split(":")[0] + '/live/ob01')
+        $('#txt_con_url').val(window.location.href.split(window.location.host)[0] + window.location.host)
+
+        let ws = null;
+        let connectControl = function () {
+            if ("WebSocket" in window) {
+                console.log("您的浏览器支持 WebSocket!");
+                ws = new WebSocket("ws://" + window.location.host + "/link/");
+                ws.onopen = function () {
+                    // Web Socket 已连接上，使用 send() 方法尝试发送数据
+                    ws.send('{"l":"0","r":"0"}');
+                };
+                //监听服务端是否有消息发送过来，当有消息时执行方法
+                ws.onmessage = function (evt) {
+                    //获取服务器发来的消息
+                    let received_msg = evt.data;
+                    //显示消息
+                    console.log("收到消息：" + received_msg)
+                };
+                //关闭页面或其他行为导致与服务器断开链接是执行
+                ws.onclose = function () {
+                    console.log("连接已关闭...");
+                };
+            } else {
+                alert("您的浏览器不支持 WebSocket!");
+            }
+        }
+
+        let submitControl = function (l, r) {
             if (this.promise_ != null) {
-                if ((new Date().getTime() - this.lastDate)<50){
+                if ((new Date().getTime() - this.lastDate) < 50) {
                     return
                 }
                 if (this.promise_.state() === 'pending')
@@ -66,6 +103,57 @@
                 console.log("Data: " + data + "\nStatus: " + status);
             });
         }
+        let submitWsControl = function (l, r) {
+            if (this.promise_ != null) {
+                if ((new Date().getTime() - this.lastDate) < 100) {
+                    return
+                }
+                if (this.promise_.readyState !== this.promise_.OPEN) {
+                    ws.close()
+                    ws = null;
+                    return
+                }
+                this.promise_.send('{"l":"' + l + '","r":"' + r + '"}')
+            }
+            this.lastDate = new Date().getTime()
+            this.promise_ = ws;
+        }
+
+        let sdk = null; // Global handler to do cleanup when replaying.
+        let startPlay = function () {
+            $('#rtc_media_player').show();
+            $('#joy-con').show();
+
+            // Close PC when user replay.
+            if (sdk) {
+                sdk.close();
+            }
+            sdk = new SrsRtcPlayerAsync();
+
+            // https://webrtc.org/getting-started/remote-streams
+            $('#rtc_media_player').prop('srcObject', sdk.stream);
+            // Optional callback, SDK will add track to stream.
+            // sdk.ontrack = function (event) { console.log('Got track', event); sdk.stream.addTrack(event.track); };
+
+            // For example: webrtc://r.ossrs.net/live/livestream
+            let url = $("#txt_url").val();
+            sdk.play(url).then(function (session) {
+                $('#sessionid').html(session.sessionid);
+                $('#simulator-drop').attr('href', session.simulator + '?drop=1&username=' + session.sessionid);
+            }).catch(function (reason) {
+                ws.close();
+                sdk.close();
+                $('#rtc_media_player').hide();
+                $('#joy-con').hide();
+                console.error(reason);
+            });
+        };
+
+        $("#btn_play").click(function () {
+            $('#rtc_media_player').prop('muted', false);
+            startPlay();
+            connectControl();
+        });
 
         let joyCon = document.querySelector("#joy-con");
         // eslint-disable-next-line no-debugger
@@ -93,10 +181,9 @@
                     l = -l;
                     r = -r;
                 }
-                submitControl(l, r)
+                submitWsControl(l.toFixed(2), r.toFixed(2))
             }
         });
-
         //停止滑动摇杆的事件
         manager.on("end", function (evt, data) {
             $.get($('#txt_con_url').val() + "/control/?l=0&r=0", function (data, status) {
@@ -104,64 +191,7 @@
             });
             console.log(data)
         });
-    </script>
 
-    <label></label>
-    SessionID: <span id="sessionid"></span>
-
-    <label></label>
-    Simulator: <a href="" id="simulator-drop">Drop</a>
-
-</div>
-<script type="text/javascript">
-    $(function () {
-        var sdk = null; // Global handler to do cleanup when replaying.
-        var startPlay = function () {
-            $('#rtc_media_player').show();
-            $('#joy-con').show();
-
-            // Close PC when user replay.
-            if (sdk) {
-                sdk.close();
-            }
-            sdk = new SrsRtcPlayerAsync();
-
-            // https://webrtc.org/getting-started/remote-streams
-            $('#rtc_media_player').prop('srcObject', sdk.stream);
-            // Optional callback, SDK will add track to stream.
-            // sdk.ontrack = function (event) { console.log('Got track', event); sdk.stream.addTrack(event.track); };
-
-            // For example: webrtc://r.ossrs.net/live/livestream
-            var url = $("#txt_url").val();
-            sdk.play(url).then(function (session) {
-                $('#sessionid').html(session.sessionid);
-                $('#simulator-drop').attr('href', session.simulator + '?drop=1&username=' + session.sessionid);
-            }).catch(function (reason) {
-                sdk.close();
-                $('#rtc_media_player').hide();
-                $('#joy-con').hide();
-                console.error(reason);
-            });
-        };
-
-        $('#rtc_media_player').hide();
-        $('#joy-con').hide();
-        $('#txt_url').val('webrtc://' + window.location.host.split(":")[0] + '/live/ob01')
-        $('#txt_con_url').val(window.location.href.split(window.location.host)[0] + window.location.host)
-        var query = parse_query_string();
-        // srs_init_rtc("#txt_url", query);
-
-        $("#btn_play").click(function () {
-            $('#rtc_media_player').prop('muted', false);
-            startPlay();
-        });
-        if (query.autostart === 'true') {
-            $('#rtc_media_player').prop('muted', true);
-            console.warn('For autostart, we should mute it, see https://www.jianshu.com/p/c3c6944eed5a ' +
-                'or https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#audiovideo_elements');
-
-            startPlay();
-        }
     });
 </script>
 

@@ -22,7 +22,10 @@ from djangoProject import views as index
 urlpatterns = [
     path('favicon.ico', serve, {'path': 'img/favicon.ico'}),
     path('admin/', admin.site.urls),
+
     path('control/', index.as_views),
     path('', index.index),
 
+    path('link/', index.link),
+    path('send/', index.send),
 ]
