@@ -94,6 +94,11 @@ git clone https://github.com/ElectricDogCN/openbot-web.git
 git clone https://gitee.com/ElectricDog/openbot-web.git
 ````
 
+### 更新项目：
+````
+git pull
+````
+
 ### 配置Python依赖：
 
 #### 激活Conda虚拟环境(已激活请忽略)：

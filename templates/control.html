@@ -19,7 +19,7 @@
     <script type="text/javascript" src="{% static 'js/srs.page.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/nipplejs.js' %}"></script>
 </head>
-<body style="">
+<body>
 <div class="container">
     <div class="form-inline">
         <table>
@@ -36,10 +36,6 @@
             </tr>
         </table>
 
-        <label></label>
-        <input type="range" min="-1" max="1" value="0"/>
-        <label></label>
-        <input type="range" min="-1" max="1" value="0"/>
     </div>
 
     <label></label>
@@ -103,6 +99,8 @@
                 console.log("Data: " + data + "\nStatus: " + status);
             });
         }
+        let lastL = 0
+        let lastR = 0
         let submitWsControl = function (l, r) {
             if (this.promise_ != null) {
                 if ((new Date().getTime() - this.lastDate) < 100) {
@@ -113,6 +111,8 @@
                     ws = null;
                     return
                 }
+                lastL = l
+                lastR = r
                 this.promise_.send('{"l":"' + l + '","r":"' + r + '"}')
             }
             this.lastDate = new Date().getTime()
@@ -155,6 +155,27 @@
             connectControl();
         });
 
+        let loopStop = null;
+        let stopCar = function () {
+            if (!loopStop) {
+                loopStop = setInterval(function () {
+                    if (lastL < 0.01 && lastL > -0.01) {
+                        $.get($('#txt_con_url').val() + "/control/?l=0&r=0", function (data, status) {
+                            console.log("Data: " + data + "\nStatus: " + status);
+                        });
+                        cancelStop()
+                    } else {
+                        lastL = (lastL - (0.01 * (lastL / Math.abs(lastL)))).toFixed(2)
+                        lastR = (lastR - (0.01 * (lastR / Math.abs(lastR)))).toFixed(2)
+                        submitWsControl(lastL, lastR)
+                    }
+                }, 3)
+            }
+        }
+        let cancelStop = function () {
+            window.clearInterval(loopStop)
+            loopStop = null
+        }
         let joyCon = document.querySelector("#joy-con");
         // eslint-disable-next-line no-debugger
         let options = {
@@ -171,6 +192,26 @@
         //滑动摇杆的事件
         manager.on("move", function (evt, data) {
             if (data.direction) {
+                if (data["distance"] > 20) {
+                    cancelStop()
+                    if (data["direction"]["angle"] == "up") {
+                        let lrs = (data["distance"] / 70).toFixed(2)
+                        submitWsControl(lrs, lrs)
+                    } else if (data["direction"]["angle"] == "down") {
+                        let lrs = -(data["distance"] / 70).toFixed(2)
+                        submitWsControl(lrs, lrs)
+                    } else {
+                        if (data["direction"]["angle"] == "left") {
+                            let lrs = (data["distance"] / 70).toFixed(2)
+                            submitWsControl(-lrs, lrs)
+                        } else if (data["direction"]["angle"] == "right") {
+                            let lrs = (data["distance"] / 70).toFixed(2)
+                            submitWsControl(lrs, -lrs)
+                        }
+                    }
+                } else {
+                    stopCar()
+                }
                 let x = data["vector"]["x"]
                 let y = data["vector"]["y"]
                 let cc = Math.sqrt(x * x + y * y)
@@ -181,14 +222,14 @@
                     l = -l;
                     r = -r;
                 }
-                submitWsControl(l.toFixed(2), r.toFixed(2))
+                {#submitWsControl(l.toFixed(2), r.toFixed(2))#}
+            } else {
+                stopCar()
             }
         });
         //停止滑动摇杆的事件
         manager.on("end", function (evt, data) {
-            $.get($('#txt_con_url').val() + "/control/?l=0&r=0", function (data, status) {
-                console.log("Data: " + data + "\nStatus: " + status);
-            });
+            stopCar()
             console.log(data)
         });
 
