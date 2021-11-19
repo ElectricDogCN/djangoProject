@@ -43,7 +43,7 @@
 
 
     <label></label>
-    <div style="width: 150px;height: 150px ;user-select: none;position: static">
+    <div style="width: 150px;height: 0px ;user-select: none;position: static">
         <div id="joy-con"></div>
     </div>
 
@@ -52,13 +52,16 @@
 
     <label></label>
     Simulator: <a href="" id="simulator-drop">Drop</a>
+    <label></label>
+    self: <a href="" id="self">Drop</a>
 
 </div>
 <script type="text/javascript">
     $(function () {
         $('#rtc_media_player').hide();
-        $('#joy-con').hide();
-        $('#txt_url').val('webrtc://' + window.location.host.split(":")[0] + '/live/ob01')
+        {#$('#joy-con').hide();#}
+        $('#txt_url').val('webrtc://111.62.26.226/live/ob01')
+        {#$('#txt_url').val('webrtc://' + window.location.host.split(":")[0] + '/live/ob01')#}
         $('#txt_con_url').val(window.location.href.split(window.location.host)[0] + window.location.host)
 
         let ws = null;
@@ -119,30 +122,58 @@
             this.promise_ = ws;
         }
 
-        let sdk = null; // Global handler to do cleanup when replaying.
+
+        let player = null; // Global handler to do cleanup when replaying.
+        let publisher = null;
+
+        let startPublish = function (host, room, display) {
+            $(".ff_first").each(function (i, e) {
+                $(e).text(display);
+            });
+
+            let url = 'webrtc://' + host + '/' + room + '/' + display;
+            {#$('#rtc_media_publisher').show();#}
+            {#$('#publisher').show();#}
+
+            if (publisher) {
+                publisher.close();
+            }
+            publisher = new SrsRtcPublisherAsync();
+            {#$('#rtc_media_publisher').prop('srcObject', publisher.stream);#}
+
+            return publisher.publish(url).then(function (session) {
+                $('#self').text('Self: ' + url);
+            }).catch(function (reason) {
+                publisher.close();
+                {#$('#rtc_media_publisher').hide();#}
+                console.error(reason);
+            });
+        };
+        startPublish("111.62.26.226", "test", "con2ob1")
+
         let startPlay = function () {
             $('#rtc_media_player').show();
             $('#joy-con').show();
 
             // Close PC when user replay.
-            if (sdk) {
-                sdk.close();
+            if (player) {
+                player.close();
             }
-            sdk = new SrsRtcPlayerAsync();
+            player = new SrsRtcPlayerAsync();
 
             // https://webrtc.org/getting-started/remote-streams
-            $('#rtc_media_player').prop('srcObject', sdk.stream);
+            $('#rtc_media_player').prop('srcObject', player.stream);
             // Optional callback, SDK will add track to stream.
-            // sdk.ontrack = function (event) { console.log('Got track', event); sdk.stream.addTrack(event.track); };
+            // player.ontrack = function (event) { console.log('Got track', event); player.stream.addTrack(event.track); };
 
             // For example: webrtc://r.ossrs.net/live/livestream
             let url = $("#txt_url").val();
-            sdk.play(url).then(function (session) {
+            player.play(url).then(function (session) {
                 $('#sessionid').html(session.sessionid);
                 $('#simulator-drop').attr('href', session.simulator + '?drop=1&username=' + session.sessionid);
             }).catch(function (reason) {
                 ws.close();
-                sdk.close();
+                player.close();
                 $('#rtc_media_player').hide();
                 $('#joy-con').hide();
                 console.error(reason);
@@ -183,8 +214,8 @@
             mode: "static",// 'dynamic', 'static' or 'semi'
             size: 140,
             position: {
-                left: "100px",
-                top: "350px"
+                left: "600px",
+                bottom: "200px"
             },//在容器内垂直居中显示
             zone: joyCon //如果不提提供zone容器元素，那么默认动态生成的元素是注入在body中的。
         };
@@ -212,17 +243,6 @@
                 } else {
                     stopCar()
                 }
-                let x = data["vector"]["x"]
-                let y = data["vector"]["y"]
-                let cc = Math.sqrt(x * x + y * y)
-                cc = cc > 1 ? 1 : cc
-                let l = x > 0 ? cc : 1 + x
-                let r = x > 0 ? 1 - x : cc
-                if (y < 0) {
-                    l = -l;
-                    r = -r;
-                }
-                {#submitWsControl(l.toFixed(2), r.toFixed(2))#}
             } else {
                 stopCar()
             }
@@ -232,10 +252,7 @@
             stopCar()
             console.log(data)
         });
-
     });
 </script>
-
-
 </body>
 </html>
