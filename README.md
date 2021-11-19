@@ -95,6 +95,7 @@ git clone https://gitee.com/ElectricDog/openbot-web.git
 ````
 
 ### 更新项目：
+
 ````
 git pull
 ````
@@ -125,6 +126,11 @@ pip install -r requirements.txt
 [清华镜像站安装指南](https://mirrors4.tuna.tsinghua.edu.cn/help/docker-ce/)
 ````
 
+#### Docker 停止所有容器
+````
+docker stop $(docker ps -qa)
+````
+
 启动SRS(rtmp-rtc):
 ------------------
 
@@ -140,10 +146,38 @@ CANDIDATE=1.2.3.4
 docker run --rm --env CANDIDATE=$CANDIDATE -d -p 1935:1935 -p 8080:8080 -p 1985:1985 -p 8000:8000/udp ossrs/srs:4 objs/srs -c conf/rtmp2rtc.conf
 ````
 
+启动SRS(trc-rtc):
+------------------
+
+### `1.2.3.4`**替换为服务器公网IP**
+
+````
+CANDIDATE=1.2.3.4
+````
+
+#### 启动srs
+
+````
+docker run --rm --env CANDIDATE=$CANDIDATE -d -p 1935:1935 -p 20188:20188 -p 1985:1985 -p 8000:8000/udp ossrs/srs:4 objs/srs -c conf/rtmp2rtc.conf
+````
+
+#### 启动signaling
+
+````
+docker run --rm -d -p 1989:1989 registry.cn-hangzhou.aliyuncs.com/ossrs/signaling:1
+````
+
+#### 启动signaling
+
+````
+docker run --rm -d -p 8880:8880 -p 8443:8443 registry.cn-hangzhou.aliyuncs.com/ossrs/httpx:v1.0.2 ./bin/httpx-static -http 8880 -https 8443 -ssk ./etc/server.key -ssc ./etc/server.crt -proxy http://$CANDIDATE:1989/sig -proxy http://$CANDIDATE:1985/rtc -proxy http://$CANDIDATE:20188/
+````
+
+
 启动Django
 ------------------
 
-#### 激活Conda虚拟环境(已激活请忽略)：
+### 激活Conda虚拟环境(已激活请忽略)：
 
 ````
 conda activate openbot_web_control
@@ -155,13 +189,13 @@ conda activate openbot_web_control
 cd openbot-web
 ````
 
-#### 前台启动Django：
+### 前台启动Django：
 
 ````
 python manage.py runserver 0.0.0.0:8001
 ````
 
-#### 后台启动并输入到指定日志文件：
+### 后台启动并输入到指定日志文件：
 
 ````
 nohup python manage.py runserver 0.0.0.0:8001 &
