@@ -167,10 +167,10 @@ docker run --rm --env CANDIDATE=$CANDIDATE -d -p 1935:1935 -p 20188:20188 -p 198
 docker run --rm -d -p 1989:1989 registry.cn-hangzhou.aliyuncs.com/ossrs/signaling:1
 ````
 
-#### 启动signaling
+#### 启动httpx-static反代
 
 ````
-docker run --rm -d -p 8880:8880 -p 8443:8443 registry.cn-hangzhou.aliyuncs.com/ossrs/httpx:v1.0.2 ./bin/httpx-static -http 8880 -https 8443 -ssk ./etc/server.key -ssc ./etc/server.crt -proxy http://$CANDIDATE:1989/sig -proxy http://$CANDIDATE:1985/rtc -proxy http://$CANDIDATE:20188/
+docker run --rm -d -p 8880:8880 -p 8443:8443 registry.cn-hangzhou.aliyuncs.com/ossrs/httpx:v1.0.2 ./bin/httpx-static -http 8880 -https 8443 -ssk ./etc/server.key -ssc ./etc/server.crt -proxy http://$CANDIDATE:1989/sig -proxy http://$CANDIDATE:1985/rtc  -proxy http://$CANDIDATE:8001/index -proxy http://$CANDIDATE:20188/
 ````
 
 
