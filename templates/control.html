@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0102)http://ossrs.net/players/rtc_player.html?vhost=d.ossrs.net&server=d.ossrs.net&port=1985&autostart=true -->
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -30,12 +29,7 @@
                     <button class="btn btn-primary" id="btn_play">Apply</button>
                 </td>
             </tr>
-            <tr>
-                <td>Control Server Api URI:</td>
-                <td><input type="text" id="txt_con_url" class="input-xxlarge" value=""></td>
-            </tr>
         </table>
-
     </div>
 
     <label></label>
@@ -62,13 +56,12 @@
         {#$('#joy-con').hide();#}
         $('#txt_url').val('webrtc://111.62.26.226/live/ob01')
         {#$('#txt_url').val('webrtc://' + window.location.host.split(":")[0] + '/live/ob01')#}
-        $('#txt_con_url').val(window.location.href.split(window.location.host)[0] + window.location.host)
 
         let ws = null;
         let connectControl = function () {
             if ("WebSocket" in window) {
                 console.log("您的浏览器支持 WebSocket!");
-                ws = new WebSocket("ws://" + window.location.host + "/link/");
+                ws = new WebSocket(((window.location.protocol.replace(":", "") !== "https") ? "ws://" : "wss://") + window.location.host + "/link/");
                 ws.onopen = function () {
                     // Web Socket 已连接上，使用 send() 方法尝试发送数据
                     ws.send('{"l":"0","r":"0"}');
@@ -89,19 +82,6 @@
             }
         }
 
-        let submitControl = function (l, r) {
-            if (this.promise_ != null) {
-                if ((new Date().getTime() - this.lastDate) < 50) {
-                    return
-                }
-                if (this.promise_.state() === 'pending')
-                    this.promise_.abort()
-            }
-            this.lastDate = new Date().getTime()
-            return this.promise_ = $.get($('#txt_con_url').val() + "/control/?l=" + l + "&r=" + r, function (data, status) {
-                console.log("Data: " + data + "\nStatus: " + status);
-            });
-        }
         let lastL = 0
         let lastR = 0
         let submitWsControl = function (l, r) {
@@ -132,20 +112,16 @@
             });
 
             let url = 'webrtc://' + host + '/' + room + '/' + display;
-            {#$('#rtc_media_publisher').show();#}
-            {#$('#publisher').show();#}
 
             if (publisher) {
                 publisher.close();
             }
             publisher = new SrsRtcPublisherAsync();
-            {#$('#rtc_media_publisher').prop('srcObject', publisher.stream);#}
 
             return publisher.publish(url).then(function (session) {
                 $('#self').text('Self: ' + url);
             }).catch(function (reason) {
                 publisher.close();
-                {#$('#rtc_media_publisher').hide();#}
                 console.error(reason);
             });
         };
@@ -191,7 +167,7 @@
             if (!loopStop) {
                 loopStop = setInterval(function () {
                     if (lastL < 0.01 && lastL > -0.01) {
-                        $.get($('#txt_con_url').val() + "/control/?l=0&r=0", function (data, status) {
+                        $.get(window.location.protocol.replace(":", "") + "://" + window.location.host + "/control/?l=0&r=0", function (data, status) {
                             console.log("Data: " + data + "\nStatus: " + status);
                         });
                         cancelStop()
