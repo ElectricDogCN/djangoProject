@@ -23,9 +23,9 @@ urlpatterns = [
     path('favicon.ico', serve, {'path': 'img/favicon.ico'}),
     path('admin/', admin.site.urls),
 
-    path('control/', index.as_views),
-    path('index/', index.index),
+    path('control/control/', index.as_views),
+    path('control/', index.index),
 
-    path('link/', index.link),
-    path('send/', index.send),
+    path('control/link/', index.link),
+    path('control/send/', index.send),
 ]

@@ -61,7 +61,7 @@
         let connectControl = function () {
             if ("WebSocket" in window) {
                 console.log("您的浏览器支持 WebSocket!");
-                ws = new WebSocket(((window.location.protocol.replace(":", "") !== "https") ? "ws://" : "wss://") + window.location.host + "/link/");
+                ws = new WebSocket(((window.location.protocol.replace(":", "") !== "https") ? "ws://" : "wss://") + window.location.host + "/control/link/");
                 ws.onopen = function () {
                     // Web Socket 已连接上，使用 send() 方法尝试发送数据
                     ws.send('{"l":"0","r":"0"}');
@@ -167,7 +167,7 @@
             if (!loopStop) {
                 loopStop = setInterval(function () {
                     if (lastL < 0.01 && lastL > -0.01) {
-                        $.get(window.location.protocol.replace(":", "") + "://" + window.location.host + "/control/?l=0&r=0", function (data, status) {
+                        $.get(window.location.protocol.replace(":", "") + "://" + window.location.host + "/control/control/?l=0&r=0", function (data, status) {
                             console.log("Data: " + data + "\nStatus: " + status);
                         });
                         cancelStop()
