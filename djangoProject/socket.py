@@ -35,9 +35,9 @@ class SocketServer:
             if self.last_data == "":
                 print(f'Received is null, close this client')
                 self.server_socket.close()
+                s_server.accept_thread()
                 break
             print(f'Received: {self.last_data}\r')
-
 
     def receive_thread(self):
         t = threading.Thread(target=self.receive_thread_fun())
@@ -50,8 +50,10 @@ class SocketServer:
         chunks = []
         while True:
             # OK, I know, we are not going for efficiency here...
-            chunk = self.server_socket.recv(1)
-
+            try:
+                chunk = self.server_socket.recv(1)
+            except ConnectionResetError:
+                break
             chunks.append(chunk)
             if chunk == b'\n' or chunk == b'':
                 break
