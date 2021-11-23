@@ -63,8 +63,9 @@
                 console.log("您的浏览器支持 WebSocket!");
                 ws = new WebSocket(((window.location.protocol.replace(":", "") !== "https") ? "ws://" : "wss://") + window.location.host + "/control/link/");
                 ws.onopen = function () {
+                    let desc = {"code": 0, "msg": "client onopen.", "uid": "", "data": ""};
                     // Web Socket 已连接上，使用 send() 方法尝试发送数据
-                    ws.send('{"l":"0","r":"0"}');
+                    ws.send(JSON.stringify(desc));
                 };
                 //监听服务端是否有消息发送过来，当有消息时执行方法
                 ws.onmessage = function (evt) {
@@ -72,6 +73,18 @@
                     let received_msg = evt.data;
                     //显示消息
                     console.log("收到消息：" + received_msg)
+                    received_msg = JSON.parse(received_msg)
+                    if (received_msg.hasOwnProperty("code")) {
+                        let code = received_msg["code"]
+                        if (code === 0) {
+                            this.uid = received_msg["uid"]
+                        } else {
+                            console.log(received_msg)
+                        }
+                    } else {
+                        console.log("Unknown Data!")
+                        this.close()
+                    }
                 };
                 //关闭页面或其他行为导致与服务器断开链接是执行
                 ws.onclose = function () {
@@ -96,7 +109,8 @@
                 }
                 lastL = l
                 lastR = r
-                this.promise_.send('{"l":"' + l + '","r":"' + r + '"}')
+                let msg = {"code": 101, "msg": "Control movement.", "uid": this.promise_.uid, "data": {"l": l, "r": r}};
+                this.promise_.send(JSON.stringify(msg))
             }
             this.lastDate = new Date().getTime()
             this.promise_ = ws;

@@ -22,14 +22,35 @@ def link(request):
                 break
             else:
                 client = request.websocket
-                data = json.loads(str(message, encoding="utf-8"))
-                print("msg:" + json.dumps(data))
+                msg = {}
                 try:
-                    submit_control(data["l"], data["r"])
-                    client.send(message)
+                    msg = json.loads(str(message, encoding="utf-8"))
                 except:
-                    ss.s_server.last_data = None
-                    client.send('{"msg":"wait connect"}'.encode("utf-8"))
+                    client.send(('{"msg":"Unknown Data ,' + userid + '"}').encode("utf-8"))
+                    request.close()
+                    break
+
+                if "code" in msg:
+                    # code  == 0  Client onOpen
+                    if msg["code"] == 0:
+                        reply = {"code": 0, "msg": "Server onopen.", "uid": userid, "data": ""}
+                        client.send(json.dumps(reply).encode("utf-8"))
+                    elif msg["code"] == 1:
+                        pass
+                    elif msg["code"] == 2:
+                        pass
+                    elif msg["code"] == 101:
+                        try:
+                            submit_control(msg["data"]["l"], msg["data"]["r"])
+                        except:
+                            ss.s_server.last_data = None
+                            ws_format_send(msg["uid"], 101, "wait connect", "")
+                    else:
+                        print("msg:" + json.dumps(msg))
+                else:
+                    client.send(('{"msg":"Unknown Data ,' + userid + '"}').encode("utf-8"))
+                    break
+
                 # 保存客户端的ws对象，以便给客户端发送消息,每个客户端分配一个唯一标识
                 clients[userid] = client
 
@@ -65,3 +86,15 @@ def submit_control(left, right):
         ss.s_server.last_data = ""
         ss.s_server.receive_thread()
     ss.s_server.send(cmd)
+
+
+def ws_format_send(uid: str, code: int, msg: str, data):
+    if uid in clients:
+        return ws_format_send_client(clients[uid], uid, code, msg, data)
+    return False
+
+
+def ws_format_send_client(client, uid: str, code: int, msg: str, data):
+    msg = {"code": code, "uid": uid, "msg": msg, "data": data}
+    client.send(json.dumps(msg).encode("utf-8"))
+    return True
