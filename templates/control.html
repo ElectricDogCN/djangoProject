@@ -54,10 +54,11 @@
     $(function () {
         $('#rtc_media_player').hide();
         {#$('#joy-con').hide();#}
-        $('#txt_url').val('webrtc://111.62.26.226/live/ob01')
+        $('#txt_url').val('webrtc://111.62.26.226/test/ob2con1')
         {#$('#txt_url').val('webrtc://' + window.location.host.split(":")[0] + '/live/ob01')#}
 
         let ws = null;
+        let uid = ""
         let connectControl = function () {
             if ("WebSocket" in window) {
                 console.log("您的浏览器支持 WebSocket!");
@@ -66,6 +67,19 @@
                     let desc = {"code": 0, "msg": "client onopen.", "uid": "", "data": ""};
                     // Web Socket 已连接上，使用 send() 方法尝试发送数据
                     ws.send(JSON.stringify(desc));
+                    this.g_info = setInterval(function () {
+                        if (ws.uid) {
+                            let msg = {
+                                "code": 102,
+                                "msg": "server time.",
+                                "uid": ws.uid,
+                                "s_time": "",
+                                "data": ""
+                            };
+                            ws.send(JSON.stringify(msg))
+                        }
+
+                    }, 1000)
                 };
                 //监听服务端是否有消息发送过来，当有消息时执行方法
                 ws.onmessage = function (evt) {
@@ -77,7 +91,19 @@
                     if (received_msg.hasOwnProperty("code")) {
                         let code = received_msg["code"]
                         if (code === 0) {
-                            this.uid = received_msg["uid"]
+                            ws.uid = received_msg["uid"]
+                        } else if (code === 102) {
+                            let msg = {
+                                "code": 103,
+                                "msg": "Calculation delay & get info.",
+                                "uid": ws.uid,
+                                "s_time": received_msg["s_time"],
+                                "data": ""
+                            };
+                            ws.send(JSON.stringify(msg))
+                            console.log(received_msg)
+                        } else if (code === 103) {
+                            console.log(received_msg)
                         } else {
                             console.log(received_msg)
                         }
@@ -88,6 +114,8 @@
                 };
                 //关闭页面或其他行为导致与服务器断开链接是执行
                 ws.onclose = function () {
+                    window.clearInterval(this.g_info)
+                    this.g_info = null
                     console.log("连接已关闭...");
                 };
             } else {
@@ -103,8 +131,8 @@
                     return
                 }
                 if (this.promise_.readyState !== this.promise_.OPEN) {
-                    ws.close()
-                    ws = null;
+                    this.promise_.close()
+                    this.promise_ = null;
                     return
                 }
                 lastL = l
@@ -190,7 +218,7 @@
                         lastR = (lastR - (0.01 * (lastR / Math.abs(lastR)))).toFixed(2)
                         submitWsControl(lastL, lastR)
                     }
-                }, 3)
+                }, 1)
             }
         }
         let cancelStop = function () {
