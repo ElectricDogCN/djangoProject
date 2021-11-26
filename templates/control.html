@@ -48,13 +48,14 @@
     Simulator: <a href="" id="simulator-drop">Drop</a>
     <label></label>
     self: <a href="" id="self">Drop</a>
-
+    <label></label>
+    info: <span id="info"></span>
 </div>
 <script type="text/javascript">
     $(function () {
         $('#rtc_media_player').hide();
         {#$('#joy-con').hide();#}
-        $('#txt_url').val('webrtc://111.62.26.226/test/ob2con1')
+        $('#txt_url').val('webrtc://111.62.26.226:8443/test/ob2con1')
         {#$('#txt_url').val('webrtc://' + window.location.host.split(":")[0] + '/live/ob01')#}
 
         let ws = null;
@@ -103,6 +104,7 @@
                             ws.send(JSON.stringify(msg))
                             console.log(received_msg)
                         } else if (code === 103) {
+                            $('#info').html(JSON.stringify(received_msg));
                             console.log(received_msg)
                         } else {
                             console.log(received_msg)
@@ -208,14 +210,14 @@
         let stopCar = function () {
             if (!loopStop) {
                 loopStop = setInterval(function () {
-                    if (lastL < 0.01 && lastL > -0.01) {
+                    if (lastL < 0.02 && lastL > -0.02) {
                         $.get(window.location.protocol.replace(":", "") + "://" + window.location.host + "/control/control/?l=0&r=0", function (data, status) {
                             console.log("Data: " + data + "\nStatus: " + status);
                         });
                         cancelStop()
                     } else {
-                        lastL = (lastL - (0.01 * (lastL / Math.abs(lastL)))).toFixed(2)
-                        lastR = (lastR - (0.01 * (lastR / Math.abs(lastR)))).toFixed(2)
+                        lastL = (lastL - (0.02 * (lastL / Math.abs(lastL)))).toFixed(2)
+                        lastR = (lastR - (0.02 * (lastR / Math.abs(lastR)))).toFixed(2)
                         submitWsControl(lastL, lastR)
                     }
                 }, 1)
