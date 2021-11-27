@@ -104,7 +104,7 @@
                             ws.send(JSON.stringify(msg))
                             console.log(received_msg)
                         } else if (code === 103) {
-                            $('#info').html(JSON.stringify(received_msg));
+                            $('#info').html(JSON.stringify(received_msg["data"]));
                             console.log(received_msg)
                         } else {
                             console.log(received_msg)
