@@ -47,7 +47,7 @@
     <label></label>
     Simulator: <a href="" id="simulator-drop">Drop</a>
     <label></label>
-    self: <a href="" id="self">Drop</a>
+    self: <a href="" id="self">Drop</a> <a href="#" id="noise">noise</a>
     <label></label>
     info: <span id="info"></span>
 </div>
@@ -206,6 +206,18 @@
             connectControl();
         });
 
+        $("#noise").click(function () {
+            if (ws != null && ws.isOpen()) {
+                let msg = {
+                    "code": 100,
+                    "msg": "send command.",
+                    "uid": ws.uid,
+                    "s_time": "",
+                    "data": {"command":"NOISE"}
+                };
+                ws.send(JSON.stringify(msg))
+            }
+        })
         let loopStop = null;
         let stopCar = function () {
             if (!loopStop) {

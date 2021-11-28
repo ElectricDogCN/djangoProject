@@ -49,6 +49,8 @@ def link(request):
                         pass
                     elif msg["code"] == 2:
                         pass
+                    elif msg["code"] == 100:
+                        submit('{{command: {command} }}\n'.format(command=msg["data"]["command"]))
                     # 收到101是控制指令，返回控制状态101成功 1001失败
                     elif msg["code"] == 101:
                         try:

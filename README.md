@@ -88,7 +88,7 @@ conda activate openbot_web_control
 git clone https://github.com/ElectricDogCN/openbot-web.git
 ````
 
-#### Gitee：
+#### Gitee (备份)：
 
 ````
 git clone https://gitee.com/ElectricDog/openbot-web.git
@@ -170,7 +170,7 @@ docker run --rm -d -p 1989:1989 registry.cn-hangzhou.aliyuncs.com/ossrs/signalin
 #### 启动httpx-static反代
 
 ````
-docker run --rm -d -p 8880:8880 -p 8443:8443 registry.cn-hangzhou.aliyuncs.com/ossrs/httpx:v1.0.2 ./bin/httpx-static -http 8880 -https 8443 -ssk ./etc/server.key -ssc ./etc/server.crt -proxy http://$CANDIDATE:1989/sig -proxy http://$CANDIDATE:1985/rtc  -proxy http://$CANDIDATE:8001/index -proxy http://$CANDIDATE:20188/
+docker run --rm -d -p 8880:8880 -p 8443:8443 registry.cn-hangzhou.aliyuncs.com/ossrs/httpx:v1.0.2 ./bin/httpx-static -http 8880 -https 8443 -ssk ./etc/server.key -ssc ./etc/server.crt -proxy http://$CANDIDATE:1989/sig -proxy http://$CANDIDATE:1985/rtc  -proxy http://$CANDIDATE:8001/control -proxy http://$CANDIDATE:8001/static/ -proxy http://$CANDIDATE:20188/
 ````
 
 
@@ -195,7 +195,7 @@ cd openbot-web
 python manage.py runserver 0.0.0.0:8001
 ````
 
-### 后台启动并输入到指定日志文件：
+### 或后台启动并输入到指定日志文件：
 
 ````
 nohup python manage.py runserver 0.0.0.0:8001 &
