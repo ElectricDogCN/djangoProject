@@ -254,7 +254,8 @@
         //滑动摇杆的事件
         manager.on("move", function (evt, data) {
             if (data.direction) {
-                if (data["distance"] > 20) {
+                submitWsControl(data.vector.x,data.vector.y)
+                if ((data["distance"] > 20) && false) {
                     cancelStop()
                     if (data["direction"]["angle"] == "up") {
                         let lrs = (data["distance"] / 70).toFixed(2)
