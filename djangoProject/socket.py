@@ -1,4 +1,5 @@
 import json
+import math
 import socket
 import threading
 
@@ -11,7 +12,7 @@ class SocketServer:
 
     def __init__(self, sock=None):
         self.last_data = None
-        self.info = {"voltage": "", "rpm": "", "sonar": "", "net": "", "s2c_delay": -1, "s2ob_delay": -1}
+        self.info = {"voltage": "-1", "rpm": "-1", "sonar": "-1", "net": "-1", "s2c_delay": -1, "s2ob_delay": -1}
 
         if sock is None:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -47,8 +48,17 @@ class SocketServer:
                 print(f'Received: {received_msg}\r')
             if "status" in received_msg:
                 if received_msg["status"] == "info":
-                    self.info["voltage"] = received_msg["voltage"]
-                    self.info["rpm"] = received_msg["rpm"]
+                    battery = round((float(received_msg["voltage"].split(" ")[0]) - 9) / 3.4, 3)
+                    battery = 1.0 if battery > 1.0 else battery
+                    battery = 0.0 if battery < 0 else battery
+                    self.info["voltage"] = str(battery * 100)
+
+                    TIRE_RADIUS = 7
+                    rpm = received_msg["rpm"]
+                    speed = math.fabs(
+                        round((float(rpm.split(",")[0]) / 60.0 + float(rpm.split(",")[1]) / 60.0) / 2 * TIRE_RADIUS, 2))
+                    self.info["rpm"] = str(speed)
+
                     self.info["sonar"] = received_msg["sonar"]
                     self.info["net"] = received_msg["net"]
                     self.info["s2ob_delay"] = int(round(time.time() * 1000)) - int(received_msg["s_time"])
@@ -71,6 +81,8 @@ class SocketServer:
             try:
                 chunk = self.server_socket.recv(1)
             except ConnectionResetError:
+                self.info = {"voltage": "-1", "rpm": "-1,-1", "sonar": "-1", "net": "-1", "s2c_delay": -1,
+                             "s2ob_delay": -1}
                 break
             chunks.append(chunk)
             if chunk == b'\n' or chunk == b'':
