@@ -1,3 +1,4 @@
+import math
 import time
 
 from djangoProject import socket as ss
@@ -54,8 +55,31 @@ def link(request):
                     # 收到101是控制指令，返回控制状态101成功 1001失败
                     elif msg["code"] == 101:
                         try:
-                            submit_control(msg["data"]["l"], msg["data"]["r"])
-                            ws_format_send(msg["uid"], 101, "send successful", "")
+                            x, y = msg["data"]["l"] * 100, msg["data"]["r"] * 100
+                            distance = math.sqrt(math.pow(x, 2) + math.pow(y, 2)) / 100
+                            distance = round(distance, 2) if math.fabs(distance) > 0.2 else 0.0
+                            angle = calculation_angle([0, 0, x, y], [0, 0, math.fabs(x), 0])
+                            print(angle, distance)
+                            # Right
+                            left, right = 0, 0
+                            if angle > 315 or angle < 45:
+                                left = distance
+                                right = -distance
+                            # Left
+                            elif 135 < angle < 225:
+                                left = -distance
+                                right = distance
+                            # forward
+                            elif 45 < angle < 135:
+                                left = distance
+                                right = distance
+                            # backward
+                            elif 225 < angle < 315:
+                                left = -distance
+                                right = -distance
+                            submit_control(left, right)
+                            ws_format_send(msg["uid"], 101, "send successful",
+                                           [left, right, round(msg["data"]["l"], 2), round(msg["data"]["r"], 2)])
                         except:
                             ss.s_server.last_data = None
                             ws_format_send(msg["uid"], 1001, "wait connect", "")
@@ -109,9 +133,15 @@ def as_views(request):
     return HttpResponse(ss.s_server.last_data)
 
 
+last_left, last_right = -1, -1
+
+
 def submit_control(left, right):
+    global last_left, last_right
     cmd = '{{driveCmd: {{l:{l}, r:{r} }} }}\n'.format(l=left, r=right)
-    submit(cmd)
+    if last_left != left or last_right != right:
+        submit(cmd)
+        last_left, last_right = left, right
 
 
 def submit(cmd):
@@ -131,3 +161,25 @@ def ws_format_send_client(client, uid: str, code: int, msg: str, data):
     msg = {"code": code, "uid": uid, "msg": msg, "s_time": int(round(time.time() * 1000)), "data": data}
     client.send(json.dumps(msg).encode("utf-8"))
     return True
+
+
+def calculation_angle(v1, v2):
+    dx1 = v1[2] - v1[0]
+    dy1 = v1[3] - v1[1]
+    dx2 = v2[2] - v2[0]
+    dy2 = v2[3] - v2[1]
+    angle1 = math.atan2(dy1, dx1)
+    angle1 = int(angle1 * 180 / math.pi)
+    # print(angle1)
+    angle2 = math.atan2(dy2, dx2)
+    angle2 = int(angle2 * 180 / math.pi)
+    # print(angle2)
+    if angle1 * angle2 >= 0:
+        included_angle = abs(angle1 - angle2)
+    else:
+        included_angle = abs(angle1) + abs(angle2)
+        if included_angle > 180:
+            included_angle = 360 - included_angle
+    if angle1 < 0:
+        included_angle = 360 - included_angle
+    return included_angle
