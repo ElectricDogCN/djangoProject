@@ -48,16 +48,21 @@ class SocketServer:
                 print(f'Received: {received_msg}\r')
             if "status" in received_msg:
                 if received_msg["status"] == "info":
-                    battery = round((float(received_msg["voltage"].split(" ")[0]) - 9) / 3.4, 3)
-                    battery = 1.0 if battery > 1.0 else battery
-                    battery = 0.0 if battery < 0 else battery
-                    self.info["voltage"] = str(battery * 100)
+                    try:
+                        battery = round((float(received_msg["voltage"].split(" ")[0]) - 9) / 3.4, 3)
+                        battery = 1.0 if battery > 1.0 else battery
+                        battery = 0.0 if battery < 0 else battery
+                        self.info["voltage"] = str(battery * 100)
+                    except:
+                        self.info["voltage"] = "-1"
 
                     TIRE_RADIUS = 7
-                    rpm = received_msg["rpm"]
-                    speed = math.fabs(
-                        round((float(rpm.split(",")[0]) / 60.0 + float(rpm.split(",")[1]) / 60.0) / 2 * TIRE_RADIUS, 2))
-                    self.info["rpm"] = str(speed)
+                    try:
+                        rpm = received_msg["rpm"]
+                        speed = (float(rpm.split(",")[0]) / 60.0 + float(rpm.split(",")[1]) / 60.0) / 2 * TIRE_RADIUS
+                        self.info["rpm"] = str(round(speed, 2))
+                    except:
+                        self.info["rpm"] = "-1"
 
                     self.info["sonar"] = received_msg["sonar"]
                     self.info["net"] = received_msg["net"]
