@@ -55,7 +55,7 @@ def link(request):
                     # 收到101是控制指令，返回控制状态101成功 1001失败
                     elif msg["code"] == 101:
                         try:
-                            x, y = msg["data"]["l"] * 100, msg["data"]["r"] * 100
+                            x, y = msg["data"]["x"] * 100, msg["data"]["y"] * 100
                             distance = math.sqrt(math.pow(x, 2) + math.pow(y, 2)) / 100
                             distance = round(distance, 2) if math.fabs(distance) > 0.2 else 0.0
                             angle = calculation_angle([0, 0, x, y], [0, 0, math.fabs(x), 0])
