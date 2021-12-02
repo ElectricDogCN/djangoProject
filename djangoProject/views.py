@@ -79,10 +79,10 @@ def link(request):
                                 right = -distance
                             submit_control(left, right)
                             ws_format_send(msg["uid"], 101, "send successful",
-                                           [left, right, round(msg["data"]["l"], 2), round(msg["data"]["r"], 2)])
+                                           [left, right, round(msg["data"]["x"], 2), round(msg["data"]["y"], 2)])
                         except:
                             ss.s_server.last_data = None
-                            ws_format_send(msg["uid"], 1001, "wait connect", "")
+                            ws_format_send(msg["uid"], 1001, "wait connect", [msg["data"]["x"], msg["data"]["y"]])
                     # 102 获取服务器时间 返回102成功
                     elif msg["code"] == 102:
                         try:
