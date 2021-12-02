@@ -59,7 +59,6 @@ def link(request):
                             distance = math.sqrt(math.pow(x, 2) + math.pow(y, 2)) / 100
                             distance = round(distance, 2) if math.fabs(distance) > 0.2 else 0.0
                             angle = calculation_angle([0, 0, x, y], [0, 0, math.fabs(x), 0])
-                            print(angle, distance)
                             # Right
                             left, right = 0, 0
                             if angle > 315 or angle < 45:
