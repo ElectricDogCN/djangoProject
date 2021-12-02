@@ -1,5 +1,4 @@
 import json
-import math
 import socket
 import threading
 
@@ -44,9 +43,10 @@ class SocketServer:
                 break
             received_msg = {}
             try:
-                received_msg = json.loads(received_raw)
+                received_msg = json.loads(self.receive())
             except:
                 print(f'Received1: {received_raw}\r')
+                continue
             if "status" in received_msg:
                 if received_msg["status"] == "info":
                     try:
