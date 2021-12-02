@@ -36,16 +36,17 @@ class SocketServer:
 
     def receive_thread_fun(self):
         while True:
-            if self.receive() == "":
+            received_raw = self.receive()
+            if received_raw == "":
                 print(f'Received is null, close this client')
                 self.server_socket.close()
                 s_server.accept_thread()
                 break
             received_msg = {}
             try:
-                received_msg = json.loads(self.receive())
+                received_msg = json.loads(received_raw)
             except:
-                print(f'Received: {received_msg}\r')
+                print(f'Received1: {received_raw}\r')
             if "status" in received_msg:
                 if received_msg["status"] == "info":
                     try:
@@ -68,9 +69,9 @@ class SocketServer:
                     self.info["net"] = received_msg["net"]
                     self.info["s2ob_delay"] = int(round(time.time() * 1000)) - int(received_msg["s_time"])
                 else:
-                    self.last_data = self.receive()
+                    self.last_data = received_raw
 
-            print(f'Received: {received_msg}\r')
+            print(f'Received2: {received_raw}\r')
 
     def receive_thread(self):
         t = threading.Thread(target=self.receive_thread_fun())
