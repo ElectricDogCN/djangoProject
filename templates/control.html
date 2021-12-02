@@ -138,7 +138,7 @@
 
         let lastL = 0
         let lastR = 0
-        let submitWsControl = function (l, r) {
+        let submitWsControl = function (x, y) {
             if (this.promise_ != null) {
                 if ((new Date().getTime() - this.lastDate) < 100) {
                     return
@@ -148,9 +148,9 @@
                     this.promise_ = null;
                     return
                 }
-                lastL = l
-                lastR = r
-                let msg = {"code": 101, "msg": "Control movement.", "uid": this.promise_.uid, "data": {"l": l, "r": r}};
+                lastL = x
+                lastR = y
+                let msg = {"code": 101, "msg": "Control movement.", "uid": this.promise_.uid, "data": {"x": x, "y": y}};
                 this.promise_.send(JSON.stringify(msg))
             }
             this.lastDate = new Date().getTime()
@@ -273,10 +273,10 @@
                         }
                     }
                 } else {
-                    stopCar()
+                    {#stopCar()#}
                 }
             } else {
-                stopCar()
+                {#stopCar()#}
             }
         });
         //停止滑动摇杆的事件
