@@ -93,7 +93,11 @@ class SocketServer:
             chunks.append(chunk)
             if chunk == b'\n' or chunk == b'':
                 break
-        return b''.join(chunks).decode('utf-8')
+            try:
+                return b''.join(chunks).decode('utf-8')
+            except:
+                print(chunk)
+                return chunk
 
     def close(self):
         print(f"socket connect ip:{self.server_socket}")
