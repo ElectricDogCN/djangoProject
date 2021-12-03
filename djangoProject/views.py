@@ -24,7 +24,7 @@ def link(request):
     # 判断是不是ws请求
     if request.is_websocket():
         userid = str(uuid.uuid1())
-        # 判断是否有客户端发来消息，若有则进行处理，若发来“test”表示客户端与服务器建立链接成功
+        # 判断是否有客户端发来消息，若有则进行处理，若发来“0”表示客户端与服务器建立链接成功
         while True:
             message = request.websocket.wait()
             if not message:

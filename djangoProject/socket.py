@@ -87,7 +87,7 @@ class SocketServer:
             try:
                 chunk = self.server_socket.recv(1)
             except ConnectionResetError:
-                self.info = {"voltage": "-1", "rpm": "-1,-1", "sonar": "-1", "net": "-1", "s2c_delay": -1,
+                self.info = {"voltage": "-1", "rpm": "-1", "sonar": "-1", "net": "-1", "s2c_delay": -1,
                              "s2ob_delay": -1}
                 break
             chunks.append(chunk)
