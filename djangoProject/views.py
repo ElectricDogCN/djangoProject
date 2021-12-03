@@ -132,15 +132,18 @@ def as_views(request):
     return HttpResponse(ss.s_server.last_data)
 
 
-last_left, last_right = -1, -1
+last_left, last_right, last_time = -1, -1, -1
 
 
 def submit_control(left, right):
-    global last_left, last_right
+    global last_left, last_right, last_time
     cmd = '{{driveCmd: {{l:{l}, r:{r} }} }}\n'.format(l=left, r=right)
-    if last_left != left or last_right != right:
-        submit(cmd)
-        last_left, last_right = left, right
+    if (int(round(time.time() * 1000)) - last_time < 10) and left != 0 and right != 0:
+        return False
+    if last_left == left or last_right == right:
+        return True
+    submit(cmd)
+    last_left, last_right, last_time = left, right, int(round(time.time() * 1000))
 
 
 def submit(cmd):
